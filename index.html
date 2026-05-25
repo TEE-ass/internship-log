@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>บันทึกฝึกงาน</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1a56db;
+    --primary-light: #e8f0fe;
+    --success: #10b981;
+    --danger: #ef4444;
+    --bg: #f0f4ff;
+    --card: #ffffff;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 4px 24px rgba(26,86,219,0.08);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* LOGIN */
+  #loginScreen { background: linear-gradient(135deg, #1a56db 0%, #3b82f6 50%, #6366f1 100%); align-items: center; justify-content: center; padding: 20px; }
+  .login-box { background: white; border-radius: 24px; padding: 36px 28px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(26,86,219,0.25); }
+  .login-logo { text-align: center; margin-bottom: 28px; }
+  .login-logo .logo-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #1a56db, #6366f1); border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px; }
+  .login-logo h1 { font-family: 'Kanit', sans-serif; font-size: 20px; font-weight: 600; color: var(--text); }
+  .login-logo p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+  .role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; background: var(--bg); padding: 6px; border-radius: 12px; }
+  .role-tab { padding: 10px; border: none; border-radius: 8px; background: transparent; font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; }
+  .role-tab.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+  .form-group select, .form-group input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Sarabun', sans-serif; font-size: 15px; color: var(--text); background: white; outline: none; transition: border-color 0.2s; }
+  .form-group select:focus, .form-group input:focus { border-color: var(--primary); }
+  .btn-login { width: 100%; padding: 14px; background: linear-gradient(135deg, #1a56db, #6366f1); color: white; border: none; border-radius: 12px; font-family: 'Kanit', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 4px; transition: opacity 0.2s; }
+  .btn-login:hover { opacity: 0.92; }
+
+  /* TOPBAR */
+  .topbar { background: white; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 100; }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #1a56db, #6366f1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .topbar-title { font-family: 'Kanit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text); }
+  .topbar-sub { font-size: 11px; color: var(--text-secondary); }
+  .btn-logout { padding: 7px 14px; background: #fee2e2; color: #dc2626; border: none; border-radius: 8px; font-family: 'Sarabun', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; }
+
+  /* CONTENT */
+  .page-content { padding: 20px; flex: 1; }
+  .student-header { background: linear-gradient(135deg, #1a56db, #6366f1); border-radius: var(--radius); padding: 20px; color: white; margin-bottom: 20px; }
+  .student-header h2 { font-family: 'Kanit', sans-serif; font-size: 18px; font-weight: 600; }
+  .student-header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+  .dept-badge-student { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-top: 8px; }
+  .card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .card-title { font-family: 'Kanit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .input-group { margin-bottom: 14px; }
+  .input-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+  .input-group input, .input-group textarea { width: 100%; padding: 11px 13px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Sarabun', sans-serif; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.2s; background: white; }
+  .input-group input:focus, .input-group textarea:focus { border-color: var(--primary); }
+  .input-group textarea { resize: none; height: 90px; }
+  .photo-upload { border: 2px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+  .photo-upload:hover { border-color: var(--primary); background: var(--primary-light); }
+  .photo-upload input { display: none; }
+  .photo-upload .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .photo-upload p { font-size: 13px; color: var(--text-secondary); }
+  .photo-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .photo-preview img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); }
+  .btn-submit { width: 100%; padding: 15px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 12px; font-family: 'Kanit', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 4px; transition: opacity 0.2s; }
+  .btn-submit:hover { opacity: 0.92; }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: white; padding: 6px; border-radius: 12px; box-shadow: var(--shadow); }
+  .tab { flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; }
+  .tab.active { background: var(--primary); color: white; }
+
+  /* LOG ITEMS */
+  .log-item { background: white; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+  .log-date { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .log-time { display: flex; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+  .log-time span { background: var(--primary-light); color: var(--primary); padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .log-section { margin-bottom: 6px; }
+  .log-section-label { font-size: 11px; color: var(--text-secondary); }
+  .log-section-text { font-size: 14px; color: var(--text); }
+  .log-photos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .log-photos img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; cursor: pointer; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* TEACHER */
+  .teacher-header { background: linear-gradient(135deg, #7c3aed, #ec4899); border-radius: var(--radius); padding: 20px; color: white; margin-bottom: 20px; }
+  .teacher-header h2 { font-family: 'Kanit', sans-serif; font-size: 18px; font-weight: 600; }
+  .teacher-header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+  .student-card { background: white; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+  .student-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(26,86,219,0.12); }
+  .student-card-top { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 44px; height: 44px; background: linear-gradient(135deg, #1a56db, #6366f1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Kanit', sans-serif; font-size: 18px; color: white; font-weight: 600; flex-shrink: 0; }
+  .avatar.dept2 { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+  .avatar.dept3 { background: linear-gradient(135deg, #f59e0b, #f97316); }
+  .student-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .student-dept { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .log-count { margin-left: auto; background: var(--primary-light); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .back-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; font-family: 'Sarabun', sans-serif; font-size: 15px; color: var(--primary); cursor: pointer; padding: 0; margin-bottom: 16px; font-weight: 500; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; z-index: 9999; transition: transform 0.3s ease; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  /* LOADING */
+  .loading { text-align: center; padding: 30px; color: var(--text-secondary); font-size: 14px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* LIGHTBOX */
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9998; align-items: center; justify-content: center; }
+  .lightbox.show { display: flex; }
+  .lightbox img { max-width: 95vw; max-height: 90vh; border-radius: 12px; }
+  .lightbox-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- SCRIPT URL -->
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxx9f3URaaJGmMOrreFCkLJoHHFvAZrU0JDvaL6Q1mGLfr0lnWSqtDWAUUHZyk3L2svEA/exec';
+</script>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-icon">📋</div>
+      <h1>บันทึกฝึกงาน</h1>
+      <p>ระบบบันทึกรายวันสำหรับนักเรียนฝึกงาน</p>
+    </div>
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="switchRole('student')">🎓 นักเรียน</button>
+      <button class="role-tab" onclick="switchRole('teacher')">👩‍🏫 ครู/อาจารย์</button>
+    </div>
+    <div id="studentLoginForm">
+      <div class="form-group">
+        <label>เลือกชื่อนักเรียน</label>
+        <select id="studentSelect">
+          <option value="">-- เลือกชื่อของคุณ --</option>
+          <option value="จักรรินทร์ เนตรวงศา">นาย จักรรินทร์ เนตรวงศา</option>
+          <option value="นันทิยา สาธุ">นางสาว นันทิยา สาธุ</option>
+          <option value="สุภธิดา แพงแสงสุก">นางสาว สุภธิดา แพงแสงสุก</option>
+          <option value="วรเวช น้อยภูมิ">นาย วรเวช น้อยภูมิ</option>
+          <option value="พิมรดา อยู่พร้อม">นางสาว พิมรดา อยู่พร้อม</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>รหัสผ่าน</label>
+        <input type="password" id="studentPass" placeholder="รหัสผ่าน (1234)" />
+      </div>
+      <button class="btn-login" onclick="loginStudent()">เข้าสู่ระบบ</button>
+    </div>
+    <div id="teacherLoginForm" style="display:none">
+      <div class="form-group">
+        <label>แผนกของท่าน</label>
+        <select id="teacherDept">
+          <option value="">-- เลือกแผนก --</option>
+          <option value="เทคโนโลยีธุรกิจดิจิทัล">เทคโนโลยีธุรกิจดิจิทัล</option>
+          <option value="เมคคาทรอนิกส์และหุ่นยนต์">เมคคาทรอนิกส์และหุ่นยนต์</option>
+          <option value="ช่างไฟฟ้า">ช่างไฟฟ้า</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>รหัสผ่าน</label>
+        <input type="password" id="teacherPass" placeholder="รหัสผ่านครู (teacher)" />
+      </div>
+      <button class="btn-login" onclick="loginTeacher()">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT SCREEN -->
+<div id="studentScreen" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">📋</div>
+      <div>
+        <div class="topbar-title">บันทึกฝึกงาน</div>
+        <div class="topbar-sub" id="studentTopSub"></div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+  </div>
+  <div class="page-content">
+    <div class="student-header">
+      <h2 id="studentHeaderName"></h2>
+      <p id="studentHeaderDept"></p>
+      <div class="dept-badge-student" id="studentHeaderDate"></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchStudentTab('record')">✏️ บันทึกวันนี้</button>
+      <button class="tab" onclick="switchStudentTab('history')">📅 ประวัติ</button>
+    </div>
+    <div id="recordTab">
+      <div class="card">
+        <div class="card-title">🕐 เวลาทำงาน</div>
+        <div class="time-row">
+          <div class="input-group">
+            <label>เวลาเข้างาน</label>
+            <input type="time" id="timeIn" />
+          </div>
+          <div class="input-group">
+            <label>เวลาออกงาน</label>
+            <input type="time" id="timeOut" />
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📝 รายละเอียดประจำวัน</div>
+        <div class="input-group">
+          <label>งานที่ทำในวันนี้</label>
+          <textarea id="workDone" placeholder="อธิบายงานที่ทำในวันนี้..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>สิ่งที่ได้เรียนรู้</label>
+          <textarea id="learned" placeholder="บอกสิ่งที่ได้เรียนรู้วันนี้..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>ปัญหาที่พบ (ถ้ามี)</label>
+          <textarea id="problems" placeholder="ปัญหาหรืออุปสรรคที่พบ..."></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📷 รูปภาพ</div>
+        <label class="photo-upload" for="photoInput">
+          <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotos(event)" />
+          <div class="upload-icon">📸</div>
+          <p>แตะเพื่อเพิ่มรูปภาพ<br><span style="font-size:11px;opacity:0.6">รองรับหลายรูป</span></p>
+        </label>
+        <div class="photo-preview" id="photoPreview"></div>
+      </div>
+      <button class="btn-submit" id="submitBtn" onclick="submitLog()">✅ บันทึกประจำวัน</button>
+    </div>
+    <div id="historyTab" style="display:none">
+      <div id="historyList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER SCREEN -->
+<div id="teacherScreen" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">👩‍🏫</div>
+      <div>
+        <div class="topbar-title">ดูบันทึกฝึกงาน</div>
+        <div class="topbar-sub" id="teacherTopSub"></div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+  </div>
+  <div class="page-content">
+    <div id="teacherStudentList">
+      <div class="teacher-header">
+        <h2 id="teacherDeptTitle"></h2>
+        <p id="teacherStudentCount"></p>
+      </div>
+      <div id="teacherStudentCards"></div>
+    </div>
+    <div id="teacherStudentDetail" style="display:none">
+      <button class="back-btn" onclick="backToStudentList()">← กลับ</button>
+      <div id="teacherDetailContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close">✕</button>
+  <img id="lightboxImg" src="" />
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const STUDENTS = {
+  'จักรรินทร์ เนตรวงศา': { dept: 'เทคโนโลยีธุรกิจดิจิทัล', pass: '1234', avatarClass: '' },
+  'นันทิยา สาธุ': { dept: 'เมคคาทรอนิกส์และหุ่นยนต์', pass: '1234', avatarClass: 'dept2' },
+  'สุภธิดา แพงแสงสุก': { dept: 'เมคคาทรอนิกส์และหุ่นยนต์', pass: '1234', avatarClass: 'dept2' },
+  'วรเวช น้อยภูมิ': { dept: 'ช่างไฟฟ้า', pass: '1234', avatarClass: 'dept3' },
+  'พิมรดา อยู่พร้อม': { dept: 'ช่างไฟฟ้า', pass: '1234', avatarClass: 'dept3' },
+};
+const TEACHER_PASS = 'teacher';
+let currentUser = null;
+let photoDataURLs = [];
+
+// ===== ROLE =====
+function switchRole(role) {
+  document.querySelectorAll('.role-tab').forEach((t,i) => t.classList.toggle('active', (role==='student'&&i===0)||(role==='teacher'&&i===1)));
+  document.getElementById('studentLoginForm').style.display = role === 'student' ? 'block' : 'none';
+  document.getElementById('teacherLoginForm').style.display = role === 'teacher' ? 'block' : 'none';
+}
+
+// ===== LOGIN =====
+function loginStudent() {
+  const name = document.getElementById('studentSelect').value;
+  const pass = document.getElementById('studentPass').value;
+  if (!name) { showToast('กรุณาเลือกชื่อ'); return; }
+  if (pass !== STUDENTS[name].pass) { showToast('รหัสผ่านไม่ถูกต้อง'); return; }
+  currentUser = { name, ...STUDENTS[name] };
+  showStudentScreen();
+}
+function loginTeacher() {
+  const dept = document.getElementById('teacherDept').value;
+  const pass = document.getElementById('teacherPass').value;
+  if (!dept) { showToast('กรุณาเลือกแผนก'); return; }
+  if (pass !== TEACHER_PASS) { showToast('รหัสผ่านไม่ถูกต้อง'); return; }
+  currentUser = { dept };
+  showTeacherScreen();
+}
+function logout() {
+  currentUser = null;
+  photoDataURLs = [];
+  document.getElementById('studentPass').value = '';
+  document.getElementById('teacherPass').value = '';
+  switchScreen('loginScreen');
+}
+
+// ===== SCREENS =====
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showStudentScreen() {
+  const today = new Date().toLocaleDateString('th-TH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('studentHeaderName').textContent = currentUser.name;
+  document.getElementById('studentHeaderDept').textContent = 'แผนก' + currentUser.dept;
+  document.getElementById('studentHeaderDate').textContent = today;
+  document.getElementById('studentTopSub').textContent = currentUser.name;
+  const now = new Date();
+  document.getElementById('timeIn').value = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  switchStudentTab('record');
+  switchScreen('studentScreen');
+}
+
+// ===== TEACHER =====
+function showTeacherScreen() {
+  const dept = currentUser.dept;
+  const students = Object.entries(STUDENTS).filter(([,v]) => v.dept === dept);
+  document.getElementById('teacherDeptTitle').textContent = 'แผนก' + dept;
+  document.getElementById('teacherStudentCount').textContent = 'นักเรียน ' + students.length + ' คน';
+  document.getElementById('teacherTopSub').textContent = 'แผนก' + dept;
+  document.getElementById('teacherStudentCards').innerHTML = '<div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>';
+  document.getElementById('teacherStudentList').style.display = 'block';
+  document.getElementById('teacherStudentDetail').style.display = 'none';
+  switchScreen('teacherScreen');
+
+  fetch(SCRIPT_URL + '?dept=' + encodeURIComponent(dept))
+    .then(r => r.json())
+    .then(data => {
+      let html = '';
+      students.forEach(([name, info]) => {
+        const logs = data[name] || [];
+        html += `<div class="student-card" onclick="viewStudentDetail('${name}', ${JSON.stringify(logs).replace(/'/g,"&#39;")})">
+          <div class="student-card-top">
+            <div class="avatar ${info.avatarClass}">${name.charAt(0)}</div>
+            <div>
+              <div class="student-name">${name}</div>
+              <div class="student-dept">${info.dept}</div>
+            </div>
+            <div class="log-count">${logs.length} วัน</div>
+          </div>
+        </div>`;
+      });
+      document.getElementById('teacherStudentCards').innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById('teacherStudentCards').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>โหลดข้อมูลไม่ได้<br>ลองใหม่อีกครั้ง</p></div>';
+    });
+}
+
+function viewStudentDetail(name, logs) {
+  document.getElementById('teacherStudentList').style.display = 'none';
+  const logsArr = typeof logs === 'string' ? JSON.parse(logs) : logs;
+  const reversed = logsArr.slice().reverse();
+  let html = `<div class="student-header" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">
+    <h2>${name}</h2><p>แผนก${STUDENTS[name].dept}</p>
+    <div class="dept-badge-student">บันทึกทั้งหมด ${reversed.length} วัน</div>
+  </div>`;
+  if (reversed.length === 0) {
+    html += '<div class="empty-state"><div class="empty-icon">📭</div><p>ยังไม่มีบันทึก</p></div>';
+  } else {
+    reversed.forEach(log => {
+      const photosHtml = log.photos ? log.photos.split(',').filter(p=>p.trim()).map(p=>`<img src="${p.trim()}" onclick="openLightbox('${p.trim()}')" />`).join('') : '';
+      html += `<div class="log-item">
+        <div class="log-date">📅 ${log.date}</div>
+        <div class="log-time"><span>🟢 เข้า ${log.timeIn||'-'}</span><span>🔴 ออก ${log.timeOut||'-'}</span></div>
+        <div class="log-section"><div class="log-section-label">งานที่ทำ</div><div class="log-section-text">${log.workDone||'-'}</div></div>
+        <div class="log-section" style="margin-top:8px"><div class="log-section-label">สิ่งที่เรียนรู้</div><div class="log-section-text">${log.learned||'-'}</div></div>
+        ${log.problems ? `<div class="log-section" style="margin-top:8px"><div class="log-section-label">ปัญหา</div><div class="log-section-text">${log.problems}</div></div>` : ''}
+        ${photosHtml ? `<div class="log-photos">${photosHtml}</div>` : ''}
+      </div>`;
+    });
+  }
+  document.getElementById('teacherDetailContent').innerHTML = html;
+  document.getElementById('teacherStudentDetail').style.display = 'block';
+}
+
+function backToStudentList() {
+  document.getElementById('teacherStudentDetail').style.display = 'none';
+  document.getElementById('teacherStudentList').style.display = 'block';
+}
+
+// ===== STUDENT TABS =====
+function switchStudentTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='record'&&i===0)||(tab==='history'&&i===1)));
+  document.getElementById('recordTab').style.display = tab === 'record' ? 'block' : 'none';
+  document.getElementById('historyTab').style.display = tab === 'history' ? 'block' : 'none';
+  if (tab === 'history') renderHistory();
+}
+
+function renderHistory() {
+  document.getElementById('historyList').innerHTML = '<div class="loading"><div class="spinner"></div>กำลังโหลด...</div>';
+  fetch(SCRIPT_URL + '?dept=' + encodeURIComponent(currentUser.dept))
+    .then(r => r.json())
+    .then(data => {
+      const myLogs = (data[currentUser.name] || []).slice().reverse();
+      if (myLogs.length === 0) {
+        document.getElementById('historyList').innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>ยังไม่มีบันทึก<br>เริ่มบันทึกวันแรกได้เลย!</p></div>';
+        return;
+      }
+      let html = '';
+      myLogs.forEach(log => {
+        const photosHtml = log.photos ? log.photos.split(',').filter(p=>p.trim()).map(p=>`<img src="${p.trim()}" onclick="openLightbox('${p.trim()}')" />`).join('') : '';
+        html += `<div class="log-item">
+          <div class="log-date">📅 ${log.date}</div>
+          <div class="log-time"><span>🟢 เข้า ${log.timeIn||'-'}</span><span>🔴 ออก ${log.timeOut||'-'}</span></div>
+          <div class="log-section"><div class="log-section-label">งานที่ทำ</div><div class="log-section-text">${log.workDone||'-'}</div></div>
+          <div class="log-section" style="margin-top:8px"><div class="log-section-label">สิ่งที่เรียนรู้</div><div class="log-section-text">${log.learned||'-'}</div></div>
+          ${log.problems ? `<div class="log-section" style="margin-top:8px"><div class="log-section-label">ปัญหา</div><div class="log-section-text">${log.problems}</div></div>` : ''}
+          ${photosHtml ? `<div class="log-photos">${photosHtml}</div>` : ''}
+        </div>`;
+      });
+      document.getElementById('historyList').innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById('historyList').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>โหลดไม่ได้ ลองใหม่</p></div>';
+    });
+}
+
+// ===== PHOTOS =====
+function handlePhotos(e) {
+  const files = Array.from(e.target.files);
+  const preview = document.getElementById('photoPreview');
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      photoDataURLs.push(ev.target.result);
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ===== SUBMIT =====
+function submitLog() {
+  const timeIn = document.getElementById('timeIn').value;
+  const timeOut = document.getElementById('timeOut').value;
+  const workDone = document.getElementById('workDone').value.trim();
+  const learned = document.getElementById('learned').value.trim();
+  const problems = document.getElementById('problems').value.trim();
+  if (!timeIn) { showToast('กรุณาใส่เวลาเข้างาน'); return; }
+  if (!workDone) { showToast('กรุณากรอกงานที่ทำ'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังบันทึก...';
+
+  const today = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+  const payload = { student: currentUser.name, dept: currentUser.dept, date: today, timeIn, timeOut, workDone, learned, problems, photos: photoDataURLs.join(',') };
+
+  fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === 'ok') {
+        document.getElementById('timeOut').value = '';
+        document.getElementById('workDone').value = '';
+        document.getElementById('learned').value = '';
+        document.getElementById('problems').value = '';
+        document.getElementById('photoPreview').innerHTML = '';
+        document.getElementById('photoInput').value = '';
+        photoDataURLs = [];
+        showToast('✅ บันทึกสำเร็จแล้ว!', 'success');
+      } else {
+        showToast('เกิดข้อผิดพลาด ลองใหม่', 'error');
+      }
+    })
+    .catch(() => showToast('เชื่อมต่อไม่ได้ ลองใหม่', 'error'))
+    .finally(() => {
+      btn.disabled = false;
+      btn.textContent = '✅ บันทึกประจำวัน';
+    });
+}
+
+// ===== LIGHTBOX =====
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+}
+
+// ===== TOAST =====
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
